@@ -1,6 +1,6 @@
 # Getting started with Aspire and Dev Containers
 
-Build apps with JavaScript/TypeScript, Python, .NET, or a mix of languages using [Aspire](https://aspire.dev). This repository template provides a ready-to-use development environment for Visual Studio Code Dev Containers and GitHub Codespaces, without choosing an application language or framework for you.
+Build .NET apps with [Aspire](https://aspire.dev). This repository template provides a ready-to-use development environment for Visual Studio Code Dev Containers and GitHub Codespaces.
 
 ## What's included
 
@@ -10,12 +10,9 @@ The container uses an Ubuntu 24.04 base image, with language tooling installed a
 | --- | --- |
 | Aspire CLI and VS Code extension | Orchestrate and debug your app's services |
 | Docker-in-Docker | Run containers for databases, caches, and other dependencies |
-| Node.js LTS and npm | Develop JavaScript and TypeScript apps |
-| Python and uv | Develop Python apps and manage packages and virtual environments |
 | .NET 10 SDK and C# Dev Kit | Develop .NET apps |
-| PowerShell | Run cross-platform automation scripts |
 
-VS Code includes JavaScript/TypeScript support, with ESLint, Python, and Pylance extensions installed alongside the .NET tooling.
+VS Code includes the Aspire and C# Dev Kit extensions alongside the .NET tooling.
 
 ## Get started
 
@@ -49,7 +46,7 @@ Trust inside the container does not automatically make your host browser trust t
 
 ## CI checks
 
-The [Devcontainer workflow](.github/workflows/devcontainer.yml) runs on pull requests, pushes to `main`, and manual dispatch. Each matrix job starts the actual devcontainer and runs [smoke checks](.github/scripts/smoke-test.mjs) before and after stopping and reopening it:
+The [Devcontainer workflow](.github/workflows/devcontainer.yml) runs on pull requests, pushes to `main`, and manual dispatch. Each matrix job generates a temporary test configuration with extra language tools, then starts the devcontainer and runs [smoke checks](.github/scripts/smoke-test.mjs) before and after stopping and reopening it. These test-only tools are not part of the default .NET development container:
 
 | Scenario | AppHost and services |
 | --- | --- |
@@ -61,11 +58,12 @@ All jobs check non-root workspace access, tooling, startup certificate trust, Do
 
 The Redis check uses a non-expiring sentinel value rather than timing-dependent response comparisons. Failures preserve container, AppHost, and resource logs as workflow artifacts. Sample projects stay inside the container. VS Code extensions, debugging, browser rendering, and IDE port forwarding are not covered.
 
-To run the same checks locally with Docker running:
+To run the same checks locally with Docker running, first generate the test configuration:
 
 ```sh
-npx --yes --package @devcontainers/cli@0.89.0 devcontainer up --workspace-folder . --mount-workspace-git-root false --no-lockfile
-npx --yes --package @devcontainers/cli@0.89.0 devcontainer exec --workspace-folder . node .github/scripts/smoke-test.mjs
+node .github/scripts/prepare-config.mjs --output /tmp/aspire-devcontainer-test/devcontainer.json
+npx --yes --package @devcontainers/cli@0.89.0 devcontainer up --workspace-folder . --config /tmp/aspire-devcontainer-test/devcontainer.json --mount-workspace-git-root false --no-lockfile
+npx --yes --package @devcontainers/cli@0.89.0 devcontainer exec --workspace-folder . --config /tmp/aspire-devcontainer-test/devcontainer.json node .github/scripts/smoke-test.mjs
 ```
 
 The default scenario is `python`; append `csharp` to the smoke command for the C# AppHost. For the SDK-free scenario, generate a temporary configuration with `node .github/scripts/prepare-config.mjs --output /tmp/aspire-no-dotnet/devcontainer.json --without-dotnet`, pass `--config /tmp/aspire-no-dotnet/devcontainer.json` to both CLI commands, and append `typescript-no-dotnet` to the smoke command.
