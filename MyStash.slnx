@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="MyStash.AppHost/MyStash.AppHost.csproj" />
+  <Project Path="MyStash.BlazorBff/MyStash.BlazorBff.csproj" />
+  <Project Path="MyStash.CoreApi/MyStash.CoreApi.csproj" />
+</Solution>

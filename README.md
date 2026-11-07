@@ -10,7 +10,7 @@ The container uses an Ubuntu 24.04 base image, with language tooling installed a
 | --- | --- |
 | Aspire CLI and VS Code extension | Orchestrate and debug your app's services |
 | Docker-in-Docker | Run containers for databases, caches, and other dependencies |
-| .NET 10 SDK and C# Dev Kit | Develop .NET apps |
+| .NET 10 SDK, Aspire workload, and C# Dev Kit | Develop .NET apps and Aspire projects |
 
 VS Code includes the Aspire and C# Dev Kit extensions alongside the .NET tooling.
 

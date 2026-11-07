@@ -1,0 +1,17 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.6.4">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AspireUseCliBundle>true</AspireUseCliBundle>
+    <UserSecretsId>7c9edf8d-c864-4ef7-83e2-2bf56a879a90</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../MyStash.BlazorBff/MyStash.BlazorBff.csproj" />
+    <ProjectReference Include="../MyStash.CoreApi/MyStash.CoreApi.csproj" />
+  </ItemGroup>
+
+</Project>

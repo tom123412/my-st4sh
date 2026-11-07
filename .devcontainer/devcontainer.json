@@ -8,6 +8,7 @@
 			"version": "10.0"
 		}
 	},
+	"postCreateCommand": "sudo dotnet workload install aspire && dotnet new install Aspire.ProjectTemplates && dotnet tool install --global dotnet-serve",
 	"remoteEnv": {
 		"SSL_CERT_DIR": "/usr/lib/ssl/certs:/home/vscode/.aspnet/dev-certs/trust"
 	},
