@@ -1,11 +1,15 @@
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
+
 builder.Services.AddHttpClient("CoreApiClient", client =>
 {
     client.BaseAddress = new Uri("http://core-api");
 });
 
 var app = builder.Build();
+
+app.MapDefaultEndpoints();
 
 app.MapGet("/", () => "Hello World!");
 
