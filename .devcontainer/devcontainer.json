@@ -4,15 +4,22 @@
 	"features": {
 		"ghcr.io/microsoft/aspire-devcontainer-feature/aspire:2": {},
 		"ghcr.io/devcontainers/features/docker-in-docker:2": {},
+		"ghcr.io/devcontainers/features/node:1": {},
 		"ghcr.io/devcontainers/features/dotnet:2": {
 			"version": "10.0"
 		}
 	},
-	"postCreateCommand": "sudo dotnet workload install aspire && dotnet new install Aspire.ProjectTemplates && dotnet tool install --global dotnet-serve",
+	"postCreateCommand": "sudo dotnet workload install aspire && dotnet new install Aspire.ProjectTemplates && npm install -g @azure/static-web-apps-cli",
 	"remoteEnv": {
 		"SSL_CERT_DIR": "/usr/lib/ssl/certs:/home/vscode/.aspnet/dev-certs/trust"
 	},
 	"postStartCommand": "aspire certs trust --non-interactive",
+	"portsAttributes": {
+		"4280": {
+			"label": "HTMX Frontend (SWA Proxy)",
+			"onAutoForward": "openBrowser"
+		}
+	},
 	"customizations": {
 		"vscode": {
 			"extensions": [
