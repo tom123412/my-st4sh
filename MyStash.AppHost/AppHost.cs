@@ -8,7 +8,7 @@ var blazorBff = builder.AddProject<Projects.MyStash_BlazorBff>("blazor-bff")
 
 var frontendPath = Path.Combine(builder.AppHostDirectory, "../MyStash.Htmx");
 
-var bffEndpoint = blazorBff.GetEndpoint("https");
+var bffEndpoint = blazorBff.GetEndpoint("http");
 
 builder
         .AddExecutable("htmx-frontend", "swa", frontendPath)
@@ -20,7 +20,7 @@ builder
             context.Args.Add("--port");
             context.Args.Add("4280");
             context.Args.Add("--api-devserver-url");
-            context.Args.Add(ReferenceExpression.Create($"https://127.0.0.1:{bffEndpoint.Property(EndpointProperty.Port)}"));
+            context.Args.Add(ReferenceExpression.Create($"http://127.0.0.1:{bffEndpoint.Property(EndpointProperty.Port)}"));
         })
         .WithReference(blazorBff)
         .WaitFor(blazorBff)

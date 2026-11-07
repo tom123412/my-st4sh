@@ -13,7 +13,7 @@ app.MapDefaultEndpoints();
 
 app.MapGet("/", () => "Hello World!");
 
-app.MapGet("/fragments/catalog", async (IHttpClientFactory clientFactory) =>
+app.MapGet("api/fragments/catalog", async (IHttpClientFactory clientFactory) =>
 {
     var client = clientFactory.CreateClient("CoreApiClient");
     
