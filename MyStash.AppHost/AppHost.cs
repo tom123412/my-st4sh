@@ -7,9 +7,8 @@ using Microsoft.Extensions.Logging;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-builder
-    .AddAzureAppServiceEnvironment("my-stash")
-.ConfigureInfrastructure(infra =>
+builder.AddAzureAppServiceEnvironment("my-stash")
+    .ConfigureInfrastructure(infra =>
     {
         var plan = infra.GetProvisionableResources().OfType<AppServicePlan>().Single();
         plan.Sku = new AppServiceSkuDescription
@@ -28,8 +27,18 @@ builder
     })
     ;
 
-var coreApi = builder
-    .AddProject<Projects.MyStash_CoreApi>("coreapi")
+var azureSql = builder.AddAzureSqlServer("azuresql")
+    .RunAsContainer(container =>
+    {
+        container.WithDataVolume(); // Persists local dev data across restarts
+    })
+    ;
+
+var appDb = azureSql.AddDatabase("appdb");
+
+var coreApi = builder.AddProject<Projects.MyStash_CoreApi>("coreapi")
+    .WithReference(appDb)
+    .WaitFor(appDb)
     .WithExternalHttpEndpoints()
     .PublishAsAzureAppServiceWebsite((infra, website) =>
     {
@@ -38,8 +47,7 @@ var coreApi = builder
     })
     ;
 
-var blazorBff = builder
-    .AddProject<Projects.MyStash_BlazorBff>("blazor-bff")
+var blazorBff = builder.AddProject<Projects.MyStash_BlazorBff>("blazor-bff")
     .WithReference(coreApi)
     .WaitFor(coreApi)
     .WithExternalHttpEndpoints()
@@ -80,50 +88,49 @@ var swaInfra = builder.AddAzureInfrastructure("swa-infra", infra =>
     infra.Add(swaUrlOutput);
 });
 
-builder
-        .AddExecutable("htmx-frontend", "swa", frontendPath)
-        .WithArgs(context =>
-        {
-            context.Args.Add("start");
-            context.Args.Add(".");
-            context.Args.Add("--ssl");
-            context.Args.Add("--port");
-            context.Args.Add("4280");
-            context.Args.Add("--api-devserver-url");
-            context.Args.Add(ReferenceExpression.Create($"http://127.0.0.1:{bffEndpoint.Property(EndpointProperty.Port)}"));
-        })
-        .WithReference(blazorBff)
-        .WaitFor(blazorBff)
-        .WithHttpsEndpoint(port: 4280, targetPort: 4280, isProxied: false, name: "https")
-        .WithPipelineStepFactory(factoryContext =>
-        {
+builder.AddExecutable("htmx-frontend", "swa", frontendPath)
+    .WithArgs(context =>
+    {
+        context.Args.Add("start");
+        context.Args.Add(".");
+        context.Args.Add("--ssl");
+        context.Args.Add("--port");
+        context.Args.Add("4280");
+        context.Args.Add("--api-devserver-url");
+        context.Args.Add(ReferenceExpression.Create($"http://127.0.0.1:{bffEndpoint.Property(EndpointProperty.Port)}"));
+    })
+    .WithReference(blazorBff)
+    .WaitFor(blazorBff)
+    .WithHttpsEndpoint(port: 4280, targetPort: 4280, isProxied: false, name: "https")
+    .WithPipelineStepFactory(factoryContext =>
+    {
 #pragma warning disable ASPIREPIPELINES001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-            return new PipelineStep
+        return new PipelineStep
+        {
+            Name = "deploy-frontend-swa",
+            Description = "Builds and deploys the SPA to Azure Static Web Apps via SWA CLI.",
+            DependsOnSteps = ["provision-swa-infra"], // Waits until Bicep creates the SWA resource
+            RequiredBySteps = [WellKnownPipelineSteps.Deploy], // Runs automatically during `aspire deploy`
+            Action = async stepContext =>
             {
-                Name = "deploy-frontend-swa",
-                Description = "Builds and deploys the SPA to Azure Static Web Apps via SWA CLI.",
-                DependsOnSteps = ["provision-swa-infra"], // Waits until Bicep creates the SWA resource
-                RequiredBySteps = [WellKnownPipelineSteps.Deploy], // Runs automatically during `aspire deploy`
-                Action = async stepContext =>
-                {
-                    var swaNameRef = swaInfra.GetOutput("swaName");
-                    var swaName = await swaNameRef.GetValueAsync(stepContext.CancellationToken);
-                    var frontendDir = Path.GetFullPath(Path.Combine(builder.AppHostDirectory, "../MyStash.Htmx"));
+                var swaNameRef = swaInfra.GetOutput("swaName");
+                var swaName = await swaNameRef.GetValueAsync(stepContext.CancellationToken);
+                var frontendDir = Path.GetFullPath(Path.Combine(builder.AppHostDirectory, "../MyStash.Htmx"));
 
-                    stepContext.Logger.LogInformation("Deploying SPA from {Dir} to Static Web App '{SwaName}'...", frontendDir, swaName);
+                stepContext.Logger.LogInformation("Deploying SPA from {Dir} to Static Web App '{SwaName}'...", frontendDir, swaName);
 
-                    // Deploy to Azure Static Web Apps using the SWA CLI (uses your active `az login` session)
-                    // Change "./dist" to "." if you serve plain static/HTMX files without a build output folder
-                    await RunProcessAsync(
-                        fileName: "swa",
-                        arguments: $"deploy . --app-name {swaName} --env production",
-                        workingDirectory: frontendDir,
-                        logger: stepContext.Logger,
-                        cancellationToken: stepContext.CancellationToken);
-                }
-            };
+                // Deploy to Azure Static Web Apps using the SWA CLI (uses your active `az login` session)
+                // Change "./dist" to "." if you serve plain static/HTMX files without a build output folder
+                await RunProcessAsync(
+                    fileName: "swa",
+                    arguments: $"deploy . --app-name {swaName} --env production",
+                    workingDirectory: frontendDir,
+                    logger: stepContext.Logger,
+                    cancellationToken: stepContext.CancellationToken);
+            }
+        };
 #pragma warning restore ASPIREPIPELINES001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        });
+    });
 
 builder.Build().Run();
 
