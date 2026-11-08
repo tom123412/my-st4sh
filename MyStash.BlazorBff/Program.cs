@@ -4,7 +4,7 @@ builder.AddServiceDefaults();
 
 builder.Services.AddHttpClient("CoreApiClient", client =>
 {
-    client.BaseAddress = new Uri("http://core-api");
+    client.BaseAddress = new Uri("http://coreapi");
 });
 
 var app = builder.Build();
