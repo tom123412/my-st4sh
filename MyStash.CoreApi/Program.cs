@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using MyStash.CoreApi.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +12,12 @@ builder.Services.AddOpenApi();
 builder.AddSqlServerDbContext<MyStashDbContext>("appdb");
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<MyStashDbContext>();
+    await db.Database.MigrateAsync();
+}
 
 app.MapDefaultEndpoints();
 

@@ -15,15 +15,15 @@ internal class UserEmailConfiguration : IEntityTypeConfiguration<UserEmail>
 {
     void IEntityTypeConfiguration<UserEmail>.Configure(EntityTypeBuilder<UserEmail> builder)
     {
-        builder.ToTable("Emails");
+        builder.ToTable("Email");
         builder.HasKey(p => p.Id);
 
         // Enforces the database FK constraint without needing a navigation property
         builder.HasOne<User>()
-               .WithMany()
-               .HasForeignKey(p => p.UserId)
-               .OnDelete(DeleteBehavior.Restrict);
-    }
+            .WithMany()
+            .HasForeignKey(p => p.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+}
 }
 
 internal class AccountConfiguration : IEntityTypeConfiguration<Account>

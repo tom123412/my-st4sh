@@ -20,9 +20,9 @@ internal class CategoryConfiguration : IEntityTypeConfiguration<Category>
 
         // Enforces the database FK constraint without needing a navigation property
         builder.HasOne<CategoryType>()
-               .WithMany()
-               .HasForeignKey(p => p.CategoryTypeId)
-               .OnDelete(DeleteBehavior.Restrict);
+            .WithMany()
+            .HasForeignKey(p => p.CategoryTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
 
@@ -32,24 +32,31 @@ internal class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
     {
         builder.HasKey(p => p.Id);
 
-        builder.Property(p => p.RowIndex)
-               .ValueGeneratedOnAddOrUpdate()
-               ;
+        builder.ToTable(nameof(Transaction), 
+            table => table.HasTrigger("TR_Transactions_UpdateBalance"));
+
+        builder.Property(t => t.Amount)
+            .HasPrecision(18, 2);
+
+        builder.Property<long>("RowIndex")
+            .ValueGeneratedOnAddOrUpdate()
+            ;
 
         builder.Property(p => p.Balance)
-               .ValueGeneratedOnAddOrUpdate()
-               ;
+            .ValueGeneratedOnAddOrUpdate()
+            .HasPrecision(18, 2);
+            ;
 
         // Enforces the database FK constraint without needing a navigation property
         builder.HasOne<Category>()
-               .WithMany()
-               .HasForeignKey(p => p.CategoryId)
-               .OnDelete(DeleteBehavior.Restrict);
+            .WithMany()
+            .HasForeignKey(p => p.CategoryId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         // Enforces the database FK constraint without needing a navigation property
         builder.HasOne<Account>()
-               .WithMany()
-               .HasForeignKey(p => p.AccountId)
-               .OnDelete(DeleteBehavior.Restrict);
+            .WithMany()
+            .HasForeignKey(p => p.AccountId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
