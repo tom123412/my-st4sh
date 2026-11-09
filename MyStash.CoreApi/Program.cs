@@ -27,14 +27,12 @@ builder.Services
         options.Authority = authorityUri.ToString();
         options.Audience = auth0Audience;
     });
-builder.Services.AddAuthorization(options =>
-{
-    options.FallbackPolicy = new AuthorizationPolicyBuilder()
-        .RequireAuthenticatedUser()
-        .Build();
-});
 
-// Add services to the container.
+builder.Services.AddAuthorizationBuilder()
+    .SetFallbackPolicy(new AuthorizationPolicyBuilder()
+    .RequireAuthenticatedUser()
+    .Build());
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
@@ -45,11 +43,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<MyStashDbContext>();
-
-    var pending = await db.Database.GetPendingMigrationsAsync();
-    app.Logger.LogInformation("Pending migrations: {Migrations}", string.Join(", ", pending));
-
-    await db.Database.MigrateAsync();
+    // await db.Database.MigrateAsync();
 }
 
 app.MapDefaultEndpoints();

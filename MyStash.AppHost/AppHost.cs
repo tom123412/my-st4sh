@@ -30,6 +30,8 @@ builder.AddAzureAppServiceEnvironment("my-stash")
 var sqlPassword = builder.AddParameter("sql-password", secret: true);
 var auth0Authority = builder.AddParameter("auth0-authority");
 var auth0Audience = builder.AddParameter("auth0-audience");
+var auth0ClientId = builder.AddParameter("auth0-client-id");
+var auth0ClientSecret = builder.AddParameter("auth0-client-secret", secret: true);
 
 var azureSql = builder.AddAzureSqlServer("azuresql")
     .RunAsContainer(container =>
@@ -61,6 +63,8 @@ var blazorBff = builder.AddProject<Projects.MyStash_BlazorBff>("blazor-bff")
     .WithReference(coreApi)
     .WithEnvironment("Auth0__Authority", auth0Authority)
     .WithEnvironment("Auth0__Audience", auth0Audience)
+    .WithEnvironment("Auth0__ClientId", auth0ClientId)
+    .WithEnvironment("Auth0__ClientSecret", auth0ClientSecret)
     .WaitFor(coreApi)
     .WithExternalHttpEndpoints()
     .PublishAsAzureAppServiceWebsite((infra, website) =>

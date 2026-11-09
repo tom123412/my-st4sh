@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using System.Net.Http.Headers;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Auth0.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,19 +21,31 @@ if (string.IsNullOrWhiteSpace(auth0Audience))
     throw new InvalidOperationException("Auth0:Audience must be configured.");
 }
 
-builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.Authority = authorityUri.ToString();
-        options.Audience = auth0Audience;
-    });
-builder.Services.AddAuthorization(options =>
+var auth0ClientId = builder.Configuration["Auth0:ClientId"];
+if (string.IsNullOrWhiteSpace(auth0ClientId))
 {
-    options.FallbackPolicy = new AuthorizationPolicyBuilder()
-        .RequireAuthenticatedUser()
-        .Build();
-});
+    throw new InvalidOperationException("Auth0:ClientId must be configured.");
+}
+
+var auth0ClientSecret = builder.Configuration["Auth0:ClientSecret"];
+if (string.IsNullOrWhiteSpace(auth0ClientSecret))
+{
+    throw new InvalidOperationException("Auth0:ClientSecret must be configured.");
+}
+
+builder.Services.AddAuth0WebAppAuthentication(options =>
+{
+    options.Domain = authorityUri.Host;
+    options.ClientId = auth0ClientId;
+    options.ClientSecret = auth0ClientSecret;
+    options.CallbackPath = "/api/callback";
+})
+.WithAccessToken(options => options.Audience = auth0Audience);
+
+builder.Services.AddAuthorizationBuilder()
+    .SetFallbackPolicy(new AuthorizationPolicyBuilder()
+    .RequireAuthenticatedUser()
+    .Build());
 
 builder.Services.AddHttpClient("CoreApiClient", client =>
 {
@@ -45,13 +59,37 @@ app.MapDefaultEndpoints();
 app.MapGet("/", () => "Hello World!")
     .AllowAnonymous();
 
-app.MapGet("api/fragments/catalog", async (HttpContext httpContext, IHttpClientFactory clientFactory) =>
+app.MapGet("/api/login", (string? returnUrl) =>
 {
+    var properties = new LoginAuthenticationPropertiesBuilder()
+        .WithRedirectUri(IsLocalReturnUrl(returnUrl) ? returnUrl! : "/")
+        .Build();
+    return Results.Challenge(properties, [Auth0Constants.AuthenticationScheme]);
+}).AllowAnonymous();
+
+app.MapPost("/api/logout", async (HttpContext httpContext) =>
+{
+    var properties = new LogoutAuthenticationPropertiesBuilder()
+        .WithRedirectUri("/")
+        .Build();
+
+    await httpContext.SignOutAsync(Auth0Constants.AuthenticationScheme, properties);
+    await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+    return Results.Empty;
+}).AllowAnonymous();
+
+app.MapGet("/api/fragments/catalog", async (HttpContext httpContext, IHttpClientFactory clientFactory) =>
+{
+    var accessToken = await httpContext.GetTokenAsync("access_token");
+    if (string.IsNullOrWhiteSpace(accessToken))
+    {
+        return Results.Unauthorized();
+    }
+
     var client = clientFactory.CreateClient("CoreApiClient");
     
     using var request = new HttpRequestMessage(HttpMethod.Get, "/api/products");
-    request.Headers.Authorization = AuthenticationHeaderValue.Parse(
-        httpContext.Request.Headers.Authorization.ToString());
+    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
     using var response = await client.SendAsync(request, httpContext.RequestAborted);
 
     if (!response.IsSuccessStatusCode)
@@ -83,5 +121,9 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.Run();
 
+static bool IsLocalReturnUrl(string? returnUrl) =>
+    !string.IsNullOrEmpty(returnUrl)
+    && returnUrl[0] == '/'
+    && (returnUrl.Length == 1 || (returnUrl[1] != '/' && returnUrl[1] != '\\'));
 
 public record ProductDto(int Id, string Name, string Category, decimal Price);
