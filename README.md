@@ -41,6 +41,17 @@ Aspire stores these certificates under `~/.aspnet/dev-certs/trust`. The containe
 
 Trust inside the container does not automatically make your host browser trust the certificate. Follow the [Dev Containers HTTPS guidance](https://aspire.dev/get-started/dev-containers/) for local browser setup.
 
+## Auth0 API authentication
+
+The Core API and its BFF validate Auth0 access tokens using ASP.NET Core JWT Bearer authentication. Create an Auth0 API and use its issuer URL and API Identifier as the authority and audience:
+
+```sh
+dotnet user-secrets set "Parameters:auth0-authority" "https://YOUR_TENANT.auth0.com/" --project MyStash.AppHost
+dotnet user-secrets set "Parameters:auth0-audience" "https://my-stash-api" --project MyStash.AppHost
+```
+
+Aspire passes these values to both services as `Auth0:Authority` and `Auth0:Audience`. Both services use a fallback authorization policy, so every endpoint requires an authenticated user unless it is explicitly marked `.AllowAnonymous()`. The `/api/products`, `/weatherforecast`, and BFF `/api/fragments/catalog` endpoints require an Auth0 access token for this API in the Authorization Bearer header. The BFF forwards that token to the Core API. Use an access token with the API Identifier as its audience, not an ID token. The BFF root, development OpenAPI document, and Aspire health endpoints are explicitly anonymous.
+
 > [!NOTE]
 > Once you have created your repository from this template please remember to review the included files such as `LICENSE`, `CODE_OF_CONDUCT.md`, `SECURITY.md` and this `README.md` file to ensure they are appropriate for your circumstances.
 

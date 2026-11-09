@@ -1,9 +1,38 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using MyStash.CoreApi.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
+
+var auth0Authority = builder.Configuration["Auth0:Authority"];
+if (!Uri.TryCreate(auth0Authority, UriKind.Absolute, out var authorityUri)
+    || authorityUri.Scheme != Uri.UriSchemeHttps)
+{
+    throw new InvalidOperationException("Auth0:Authority must be configured as an absolute HTTPS URL.");
+}
+
+var auth0Audience = builder.Configuration["Auth0:Audience"];
+if (string.IsNullOrWhiteSpace(auth0Audience))
+{
+    throw new InvalidOperationException("Auth0:Audience must be configured.");
+}
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.Authority = authorityUri.ToString();
+        options.Audience = auth0Audience;
+    });
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+});
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -26,12 +55,14 @@ using (var scope = app.Services.CreateScope())
 app.MapDefaultEndpoints();
 
 // Configure the HTTP request pipeline.
+app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
+
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.MapOpenApi().AllowAnonymous();
 }
-
-app.UseHttpsRedirection();
 
 app.MapGet("/api/products", () =>
 {
@@ -57,7 +88,7 @@ app.MapGet("/weatherforecast", () =>
             summaries[Random.Shared.Next(summaries.Length)]
         ))
         .ToArray();
-    return forecast;
+        return forecast;
 })
 .WithName("GetWeatherForecast");
 
