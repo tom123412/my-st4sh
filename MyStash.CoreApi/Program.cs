@@ -16,6 +16,10 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<MyStashDbContext>();
+
+    var pending = await db.Database.GetPendingMigrationsAsync();
+    app.Logger.LogInformation("Pending migrations: {Migrations}", string.Join(", ", pending));
+
     await db.Database.MigrateAsync();
 }
 

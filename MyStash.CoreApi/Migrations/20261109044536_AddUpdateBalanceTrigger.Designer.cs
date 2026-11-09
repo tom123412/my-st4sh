@@ -12,8 +12,8 @@ using MyStash.CoreApi.Data;
 namespace MyStash.CoreApi.Migrations
 {
     [DbContext(typeof(MyStashDbContext))]
-    [Migration("20261109012554_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20261109044536_AddUpdateBalanceTrigger")]
+    partial class AddUpdateBalanceTrigger
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

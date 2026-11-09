@@ -35,6 +35,7 @@ var azureSql = builder.AddAzureSqlServer("azuresql")
         container
             .WithDataVolume() // Persists local dev data across restarts
             .WithPassword(sqlPassword)
+            .WithHostPort(14330)
             ;
     })
     ;
