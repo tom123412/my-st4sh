@@ -27,10 +27,15 @@ builder.AddAzureAppServiceEnvironment("my-stash")
     })
     ;
 
+var sqlPassword = builder.AddParameter("sql-password", secret: true);
+
 var azureSql = builder.AddAzureSqlServer("azuresql")
     .RunAsContainer(container =>
     {
-        container.WithDataVolume(); // Persists local dev data across restarts
+        container
+            .WithDataVolume() // Persists local dev data across restarts
+            .WithPassword(sqlPassword)
+            ;
     })
     ;
 
