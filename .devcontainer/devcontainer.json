@@ -18,7 +18,8 @@
 	"portsAttributes": {
 		"4280": {
 			"label": "HTMX Frontend (SWA Proxy)",
-			"onAutoForward": "openBrowser"
+			"onAutoForward": "openBrowser",
+			"visibility": "public"
 		}
 	},
 	"customizations": {

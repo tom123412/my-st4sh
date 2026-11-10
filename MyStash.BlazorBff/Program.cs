@@ -3,10 +3,20 @@ using System.Net.Http.Headers;
 using Auth0.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders =
+        ForwardedHeaders.XForwardedFor
+        | ForwardedHeaders.XForwardedHost
+        | ForwardedHeaders.XForwardedProto;
+    options.ForwardLimit = 1;
+});
 
 var auth0Authority = builder.Configuration["Auth0:Authority"];
 if (!Uri.TryCreate(auth0Authority, UriKind.Absolute, out var authorityUri)
@@ -33,14 +43,17 @@ if (string.IsNullOrWhiteSpace(auth0ClientSecret))
     throw new InvalidOperationException("Auth0:ClientSecret must be configured.");
 }
 
-builder.Services.AddAuth0WebAppAuthentication(options =>
-{
-    options.Domain = authorityUri.Host;
-    options.ClientId = auth0ClientId;
-    options.ClientSecret = auth0ClientSecret;
-    options.CallbackPath = "/api/callback";
-})
-.WithAccessToken(options => options.Audience = auth0Audience);
+builder.Services
+    .AddAuth0WebAppAuthentication(options =>
+    {
+        options.Domain = authorityUri.Host;
+        options.ClientId = auth0ClientId;
+        options.ClientSecret = auth0ClientSecret;
+        options.ResponseType = "code";
+        options.CallbackPath = "/api/callback";
+        options.Scope = "openid profile email";
+    })
+    .WithAccessToken(options => options.Audience = auth0Audience);
 
 builder.Services.AddAuthorizationBuilder()
     .SetFallbackPolicy(new AuthorizationPolicyBuilder()
@@ -54,18 +67,27 @@ builder.Services.AddHttpClient("CoreApiClient", client =>
 
 var app = builder.Build();
 
+app.UseForwardedHeaders();
 app.MapDefaultEndpoints();
 
-app.MapGet("/", () => "Hello World!")
+app
+    .MapGet("/", () => "Hello World!")
     .AllowAnonymous();
 
-app.MapGet("/api/login", (string? returnUrl) =>
-{
-    var properties = new LoginAuthenticationPropertiesBuilder()
-        .WithRedirectUri(IsLocalReturnUrl(returnUrl) ? returnUrl! : "/")
-        .Build();
-    return Results.Challenge(properties, [Auth0Constants.AuthenticationScheme]);
-}).AllowAnonymous();
+app
+    .MapGet("/api/login", (string? returnUrl) =>
+    {
+        var properties = new LoginAuthenticationPropertiesBuilder()
+            .WithRedirectUri(IsLocalReturnUrl(returnUrl) ? returnUrl! : "/")
+            .Build();
+        return Results.Challenge(properties, [Auth0Constants.AuthenticationScheme]);
+    })
+    .AllowAnonymous()
+    ;
+
+// app
+//     .MapMethods("/api/callback", ["GET", "POST"], () => Results.NotFound())
+//     .AllowAnonymous();
 
 app.MapPost("/api/logout", async (HttpContext httpContext) =>
 {
@@ -76,7 +98,7 @@ app.MapPost("/api/logout", async (HttpContext httpContext) =>
     await httpContext.SignOutAsync(Auth0Constants.AuthenticationScheme, properties);
     await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
     return Results.Empty;
-}).AllowAnonymous();
+});
 
 app.MapGet("/api/fragments/catalog", async (HttpContext httpContext, IHttpClientFactory clientFactory) =>
 {
