@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using MyStash.CoreApi.Data;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,7 +59,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi().AllowAnonymous();
 }
 
-app.MapGet("/api/products", () =>
+app.MapGet("/api/products", (ClaimsPrincipal user) =>
 {
     return Results.Ok(new[]
     {
@@ -74,7 +75,7 @@ var summaries = new[]
 
 app.MapGet("/weatherforecast", () =>
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
+    var forecast = Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
         (
             DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
@@ -82,7 +83,7 @@ app.MapGet("/weatherforecast", () =>
             summaries[Random.Shared.Next(summaries.Length)]
         ))
         .ToArray();
-        return forecast;
+    return forecast;
 })
 .WithName("GetWeatherForecast");
 

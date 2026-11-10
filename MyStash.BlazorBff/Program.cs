@@ -62,7 +62,7 @@ builder.Services.AddAuthorizationBuilder()
 
 builder.Services.AddHttpClient("CoreApiClient", client =>
 {
-    client.BaseAddress = new Uri("http://coreapi");
+    client.BaseAddress = new Uri("https://coreapi");
 });
 
 var app = builder.Build();
@@ -84,10 +84,6 @@ app
     })
     .AllowAnonymous()
     ;
-
-// app
-//     .MapMethods("/api/callback", ["GET", "POST"], () => Results.NotFound())
-//     .AllowAnonymous();
 
 app.MapPost("/api/logout", async (HttpContext httpContext) =>
 {
