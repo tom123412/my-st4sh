@@ -9,8 +9,16 @@ Accept: application/json
 GET {{MyStash.CoreApi_HostAddress}}/odata/Transactions?api-version=1.0&$filter=Amount gt 100&$orderby=Date desc&$top=25&$count=true
 Accept: application/json
 
-### Get OData metadata
-GET {{MyStash.CoreApi_HostAddress}}/odata/$metadata?api-version=1.0
+### Get accounts with OData filtering
+GET {{MyStash.CoreApi_HostAddress}}/odata/Accounts?api-version=1.0&$filter=IsActive eq true&$orderby=Name&$top=25&$count=true
+Accept: application/json
+
+### Get transaction OData metadata
+GET {{MyStash.CoreApi_HostAddress}}/odata/Transactions/$metadata?api-version=1.0
+Accept: application/xml
+
+### Get account OData metadata
+GET {{MyStash.CoreApi_HostAddress}}/odata/Accounts/$metadata?api-version=1.0
 Accept: application/xml
 
 ###

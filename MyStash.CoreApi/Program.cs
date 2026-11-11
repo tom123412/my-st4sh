@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.OData;
 using Microsoft.EntityFrameworkCore;
 using Asp.Versioning;
 using MyStash.CoreApi.Data;
+using MyStash.CoreApi.Features.Accounts;
 using MyStash.CoreApi.Features.Transactions;
 using System.Security.Claims;
 
@@ -47,6 +48,7 @@ builder.Services.AddApiVersioning(options =>
 });
 
 builder.AddSqlServerDbContext<MyStashDbContext>("appdb");
+builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
 
 var app = builder.Build();
@@ -64,6 +66,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapAccounts();
 app.MapTransactions();
 
 if (app.Environment.IsDevelopment())

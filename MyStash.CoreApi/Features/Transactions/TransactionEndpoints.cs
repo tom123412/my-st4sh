@@ -15,7 +15,7 @@ internal static class TransactionEndpoints
                 .ReportApiVersions()
                 .Build();
 
-            app.MapODataMetadata("odata/$metadata", TransactionODataModel.GetModel())
+            app.MapODataMetadata("odata/Transactions/$metadata", TransactionODataModel.GetModel())
                 .WithApiVersionSet(versionSet)
                 .MapToApiVersion(new ApiVersion(1, 0))
                 .WithSummary("Get OData metadata");
