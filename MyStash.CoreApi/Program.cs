@@ -44,8 +44,10 @@ builder.Services.AddOData();
 builder.Services.AddValidation();
 builder.Services.AddApiVersioning(options =>
 {
-    options.DefaultApiVersion = new ApiVersion(1, 0);
     options.ReportApiVersions = true;
+    options.ApiVersionReader = ApiVersionReader.Combine(
+        new QueryStringApiVersionReader(),
+        new HeaderApiVersionReader("X-Api-Version"));
 });
 
 builder.AddSqlServerDbContext<MyStashDbContext>("appdb");
