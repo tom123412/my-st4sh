@@ -41,6 +41,7 @@ builder.Services.AddAuthorizationBuilder()
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddOData();
+builder.Services.AddValidation();
 builder.Services.AddApiVersioning(options =>
 {
     options.DefaultApiVersion = new ApiVersion(1, 0);

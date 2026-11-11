@@ -9,6 +9,22 @@ Accept: application/json
 GET {{MyStash.CoreApi_HostAddress}}/odata/Transactions?api-version=1.0&$filter=Amount gt 100&$orderby=Date desc&$top=25&$count=true
 Accept: application/json
 
+### Create a transaction (use an account and active category linked to your email)
+POST {{MyStash.CoreApi_HostAddress}}/odata/Transactions?api-version=1.0
+Content-Type: application/json
+
+{
+  "date": "2026-11-11T00:00:00Z",
+  "amount": 42.50,
+  "isExempt": false,
+  "categoryId": 1,
+  "accountId": 1
+}
+
+### Get a transaction by ID
+GET {{MyStash.CoreApi_HostAddress}}/odata/Transactions(1)?api-version=1.0
+Accept: application/json
+
 ### Get accounts with OData filtering
 GET {{MyStash.CoreApi_HostAddress}}/odata/Accounts?api-version=1.0&$filter=IsActive eq true&$orderby=Name&$top=25&$count=true
 Accept: application/json
