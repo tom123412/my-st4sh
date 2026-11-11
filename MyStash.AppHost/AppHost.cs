@@ -7,6 +7,28 @@ using Microsoft.Extensions.Logging;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
+// Azure CLI installs Bicep lazily; initialize it once before parallel provisioning steps use it.
+#pragma warning disable ASPIREPIPELINES001 // The pipeline API is required to order Bicep initialization before provisioning.
+builder.Pipeline.AddStep(
+    "ensure-bicep-cli",
+    async context =>
+    {
+        await RunProcessAsync(
+            fileName: "az",
+            arguments: ["bicep", "install"],
+            workingDirectory: builder.AppHostDirectory,
+            logger: context.Logger,
+            cancellationToken: context.CancellationToken);
+    },
+    requiredBy: new[]
+    {
+        "provision-swa-infra",
+        "provision-azuresql",
+        "provision-my-stash-acr",
+        "provision-my-stash",
+    });
+#pragma warning restore ASPIREPIPELINES001
+
 builder.AddAzureAppServiceEnvironment("my-stash")
     .ConfigureInfrastructure(infra =>
     {
@@ -124,23 +146,38 @@ builder.AddExecutable("htmx-frontend", "swa", frontendPath)
         return new PipelineStep
         {
             Name = "deploy-frontend-swa",
-            Description = "Builds and deploys the SPA to Azure Static Web Apps via SWA CLI.",
+            Description = "Deploys the static SPA to Azure Static Web Apps via SWA CLI.",
             DependsOnSteps = ["provision-swa-infra"], // Waits until Bicep creates the SWA resource
             RequiredBySteps = [WellKnownPipelineSteps.Deploy], // Runs automatically during `aspire deploy`
             Action = async stepContext =>
             {
                 var swaNameRef = swaInfra.GetOutput("swaName");
                 var swaName = await swaNameRef.GetValueAsync(stepContext.CancellationToken);
+                if (string.IsNullOrWhiteSpace(swaName))
+                {
+                    throw new InvalidOperationException("The Static Web App name was not returned by infrastructure provisioning.");
+                }
+
                 var frontendDir = Path.GetFullPath(Path.Combine(builder.AppHostDirectory, "../MyStash.Htmx"));
 
                 stepContext.Logger.LogInformation("Deploying SPA from {Dir} to Static Web App '{SwaName}'...", frontendDir, swaName);
 
-                // Deploy to Azure Static Web Apps using the SWA CLI (uses your active `az login` session)
-                // Change "./dist" to "." if you serve plain static/HTMX files without a build output folder
+                // Run outside the artifact folder; the SWA deploy client rejects a working directory
+                // that is identical to or contained within the app artifact folder.
                 await RunProcessAsync(
                     fileName: "swa",
-                    arguments: $"deploy . --app-name {swaName} --env production",
-                    workingDirectory: frontendDir,
+                    arguments:
+                    [
+                        "deploy",
+                        frontendDir,
+                        "--app-location",
+                        frontendDir,
+                        "--app-name",
+                        swaName,
+                        "--env",
+                        "production",
+                    ],
+                    workingDirectory: builder.AppHostDirectory,
                     logger: stepContext.Logger,
                     cancellationToken: stepContext.CancellationToken);
             }
@@ -153,7 +190,7 @@ builder.Build().Run();
 
 static async Task RunProcessAsync(
     string fileName,
-    string arguments,
+    IReadOnlyList<string> arguments,
     string workingDirectory,
     ILogger logger,
     CancellationToken cancellationToken)
@@ -161,12 +198,16 @@ static async Task RunProcessAsync(
     var psi = new ProcessStartInfo
     {
         FileName = fileName,
-        Arguments = arguments,
         WorkingDirectory = workingDirectory,
         RedirectStandardOutput = true,
         RedirectStandardError = true,
         UseShellExecute = false
     };
+
+    foreach (var argument in arguments)
+    {
+        psi.ArgumentList.Add(argument);
+    }
 
     using var process = Process.Start(psi)
         ?? throw new InvalidOperationException($"Failed to start '{fileName}'. Ensure it is installed and on PATH.");
@@ -180,7 +221,7 @@ static async Task RunProcessAsync(
 
     if (process.ExitCode != 0)
     {
-        throw new InvalidOperationException($"Command '{fileName} {arguments}' failed with exit code {process.ExitCode}.");
+        throw new InvalidOperationException($"Command '{fileName} {string.Join(" ", arguments)}' failed with exit code {process.ExitCode}.");
     }
 }
 
