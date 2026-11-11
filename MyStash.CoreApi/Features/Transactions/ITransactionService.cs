@@ -15,4 +15,9 @@ public interface ITransactionService
         CreateTransactionRequest request,
         string emailAddress,
         CancellationToken cancellationToken);
+
+    Task<bool> DeleteAsync(
+        int id,
+        string emailAddress,
+        CancellationToken cancellationToken);
 }

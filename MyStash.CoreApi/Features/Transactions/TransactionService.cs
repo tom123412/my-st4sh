@@ -13,12 +13,9 @@ internal sealed class TransactionService(MyStashDbContext dbContext) : ITransact
         cancellationToken.ThrowIfCancellationRequested();
 
         return
-            from transaction in dbContext.Set<Transaction>().AsNoTracking()
-            join account in dbContext.Set<Account>() on transaction.AccountId equals account.Id
+            from transaction in GetAccessibleTransactions(emailAddress).AsNoTracking()
             join category in dbContext.Set<Category>() on transaction.CategoryId equals category.Id
             join categoryType in dbContext.Set<CategoryType>() on category.CategoryTypeId equals categoryType.Id
-            where dbContext.Set<UserEmail>().Any(userEmail =>
-                userEmail.UserId == account.UserId && userEmail.Email == emailAddress)
             select new TransactionResponse(
                 transaction.Id,
                 transaction.Date,
@@ -36,7 +33,7 @@ internal sealed class TransactionService(MyStashDbContext dbContext) : ITransact
         CancellationToken cancellationToken)
     {
         return GetAll(emailAddress, cancellationToken)
-            .FirstOrDefaultAsync(transaction => transaction.Id == id, cancellationToken);
+            .SingleOrDefaultAsync(transaction => transaction.Id == id, cancellationToken);
     }
 
     public async Task<TransactionResponse?> CreateAsync(
@@ -44,11 +41,8 @@ internal sealed class TransactionService(MyStashDbContext dbContext) : ITransact
         string emailAddress,
         CancellationToken cancellationToken)
     {
-        var canUseAccount = await (
-            from account in dbContext.Set<Account>()
-            join userEmail in dbContext.Set<UserEmail>() on account.UserId equals userEmail.UserId
-            where account.Id == request.AccountId && userEmail.Email == emailAddress
-            select account.Id)
+        var canUseAccount = await GetAccessibleAccounts(emailAddress)
+            .Where(account => account.Id == request.AccountId)
             .AnyAsync(cancellationToken);
 
         var categoryIsActive = await dbContext.Set<Category>()
@@ -74,4 +68,36 @@ internal sealed class TransactionService(MyStashDbContext dbContext) : ITransact
         return await GetByIdAsync(transaction.Id, emailAddress, cancellationToken);
     }
 
+    public async Task<bool> DeleteAsync(
+        int id,
+        string emailAddress,
+        CancellationToken cancellationToken)
+    {
+        var transaction = await GetAccessibleTransactions(emailAddress)
+            .Where(item => item.Id == id)
+            .SingleOrDefaultAsync(cancellationToken);
+
+        if (transaction is null)
+            return false;
+
+        dbContext.Set<Transaction>().Remove(transaction);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
+    private IQueryable<Account> GetAccessibleAccounts(string emailAddress)
+    {
+        return dbContext.Set<Account>()
+            .Where(account => dbContext.Set<UserEmail>().Any(userEmail =>
+                userEmail.UserId == account.UserId && userEmail.Email == emailAddress));
+    }
+
+    private IQueryable<Transaction> GetAccessibleTransactions(string emailAddress)
+    {
+        return
+            from transaction in dbContext.Set<Transaction>()
+            join account in GetAccessibleAccounts(emailAddress)
+                on transaction.AccountId equals account.Id
+            select transaction;
+    }
 }

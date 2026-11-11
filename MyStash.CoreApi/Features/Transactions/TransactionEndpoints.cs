@@ -75,6 +75,33 @@ internal static class TransactionEndpoints
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status403Forbidden);
 
+            app.MapDelete("/odata/Transactions({id:int})", async Task<Results<
+                NoContent,
+                NotFound>> (
+                int id,
+                ITransactionService transactionService,
+                ClaimsPrincipal user,
+                CancellationToken cancellationToken) =>
+            {
+                var deleted = await transactionService.DeleteAsync(
+                    id,
+                    GetEmailAddress(user)!,
+                    cancellationToken);
+                return deleted
+                    ? TypedResults.NoContent()
+                    : TypedResults.NotFound();
+            })
+            .RequireAuthorization(policy => policy.RequireAssertion(context =>
+                !string.IsNullOrWhiteSpace(GetEmailAddress(context.User))))
+            .WithApiVersionSet(versionSet)
+            .MapToApiVersion(new ApiVersion(1, 0))
+            .WithName("DeleteTransactionOData")
+            .WithSummary("Delete a transaction")
+            .WithDescription("Deletes a transaction only if its account is linked to the authenticated user's email.")
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status403Forbidden);
+
             app.MapPost("/odata/Transactions", async Task<Results<
                 Created<TransactionResponse>,
                 NotFound>> (

@@ -25,6 +25,9 @@ Content-Type: application/json
 GET {{MyStash.CoreApi_HostAddress}}/odata/Transactions(1)?api-version=1.0
 Accept: application/json
 
+### Delete a transaction by ID
+DELETE {{MyStash.CoreApi_HostAddress}}/odata/Transactions(1)?api-version=1.0
+
 ### Get accounts with OData filtering
 GET {{MyStash.CoreApi_HostAddress}}/odata/Accounts?api-version=1.0&$filter=IsActive eq true&$orderby=Name&$top=25&$count=true
 Accept: application/json
