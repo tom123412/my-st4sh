@@ -1,8 +1,6 @@
 namespace MyStash.CoreApi.Features.Transactions;
 
-internal interface ITransactionService
+public interface ITransactionService
 {
-    Task<IReadOnlyList<TransactionResponse>> GetAllAsync(
-        string emailAddress,
-        CancellationToken cancellationToken);
+    IQueryable<TransactionResponse> GetAll(string emailAddress);
 }

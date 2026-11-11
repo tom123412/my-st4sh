@@ -5,8 +5,12 @@ Accept: application/json
 
 ###
 
-### Get all transactions
-GET {{MyStash.CoreApi_HostAddress}}/api/transactions
+### Get transactions with OData filtering
+GET {{MyStash.CoreApi_HostAddress}}/odata/Transactions?$filter=Amount gt 100&$orderby=Date desc&$top=25&$count=true
 Accept: application/json
+
+### Get OData metadata
+GET {{MyStash.CoreApi_HostAddress}}/odata/$metadata
+Accept: application/xml
 
 ###

@@ -6,11 +6,9 @@ namespace MyStash.CoreApi.Features.Transactions;
 
 internal sealed class TransactionService(MyStashDbContext dbContext) : ITransactionService
 {
-    public async Task<IReadOnlyList<TransactionResponse>> GetAllAsync(
-        string emailAddress,
-        CancellationToken cancellationToken)
+    public IQueryable<TransactionResponse> GetAll(string emailAddress)
     {
-        return await (
+        return
             from transaction in dbContext.Set<Transaction>().AsNoTracking()
             join account in dbContext.Set<Account>() on transaction.AccountId equals account.Id
             join category in dbContext.Set<Category>() on transaction.CategoryId equals category.Id
@@ -25,7 +23,7 @@ internal sealed class TransactionService(MyStashDbContext dbContext) : ITransact
                 transaction.Balance,
                 category.Name,
                 categoryType.Name,
-                transaction.AccountId))
-            .ToListAsync(cancellationToken);
+                transaction.AccountId);
     }
+
 }

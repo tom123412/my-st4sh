@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.OData;
 using Microsoft.EntityFrameworkCore;
 using MyStash.CoreApi.Data;
 using MyStash.CoreApi.Features.Transactions;
@@ -37,6 +38,7 @@ builder.Services.AddAuthorizationBuilder()
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddOData();
 
 builder.AddSqlServerDbContext<MyStashDbContext>("appdb");
 builder.Services.AddScoped<ITransactionService, TransactionService>();
