@@ -12,8 +12,8 @@ namespace MyStash.CoreApi.Migrations
         {
             migrationBuilder.Sql(
                 sql: @"
-                    CREATE OR ALTER TRIGGER [dbo].[TR_Transactions_UpdateBalance]
-                    ON [dbo].[Transactions]
+                    CREATE OR ALTER TRIGGER [dbo].[TR_Transaction_UpdateBalance]
+                    ON [dbo].[Transaction]
                     AFTER INSERT, UPDATE, DELETE
                     AS
                     BEGIN
@@ -42,7 +42,7 @@ namespace MyStash.CoreApi.Migrations
                                     ORDER BY t.[Date], t.Id
                                     ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
                                 ) AS NewBalance
-                            FROM [dbo].[Transactions] t
+                            FROM [dbo].[Transaction] t
                             INNER JOIN AffectedAccounts aa ON t.AccountId = aa.AccountId
                             LEFT JOIN [dbo].[Categories] c ON t.CategoryId = c.Id
                         )
@@ -50,9 +50,9 @@ namespace MyStash.CoreApi.Migrations
                         SET
                             t.RowIndex = calc.NewRowIndex,
                             t.Balance = COALESCE(calc.NewBalance, 0)
-                        FROM [dbo].[Transactions] t
+                        FROM [dbo].[Transaction] t
                         INNER JOIN Calculated calc ON t.Id = calc.Id;
-                    END;';",
+                    END;",
                  suppressTransaction: true
             );
         }
@@ -60,7 +60,7 @@ namespace MyStash.CoreApi.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql("DROP TRIGGER IF EXISTS [dbo].[TR_Transactions_UpdateBalance];");
+            migrationBuilder.Sql("DROP TRIGGER IF EXISTS [dbo].[TR_Transaction_UpdateBalance];");
         }
     }
 }

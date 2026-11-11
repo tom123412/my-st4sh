@@ -57,7 +57,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<MyStashDbContext>();
-    // await db.Database.MigrateAsync();
+    await db.Database.MigrateAsync();
 }
 
 app.MapDefaultEndpoints();
