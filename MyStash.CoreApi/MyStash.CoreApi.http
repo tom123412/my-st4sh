@@ -6,11 +6,11 @@ Accept: application/json
 ###
 
 ### Get transactions with OData filtering
-GET {{MyStash.CoreApi_HostAddress}}/odata/Transactions?$filter=Amount gt 100&$orderby=Date desc&$top=25&$count=true
+GET {{MyStash.CoreApi_HostAddress}}/odata/Transactions?api-version=1.0&$filter=Amount gt 100&$orderby=Date desc&$top=25&$count=true
 Accept: application/json
 
 ### Get OData metadata
-GET {{MyStash.CoreApi_HostAddress}}/odata/$metadata
+GET {{MyStash.CoreApi_HostAddress}}/odata/$metadata?api-version=1.0
 Accept: application/xml
 
 ###

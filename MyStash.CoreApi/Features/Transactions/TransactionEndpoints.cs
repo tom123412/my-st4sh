@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.OData;
+using Asp.Versioning;
 using System.Security.Claims;
 
 namespace MyStash.CoreApi.Features.Transactions;
@@ -9,7 +10,14 @@ internal static class TransactionEndpoints
     {
         public WebApplication MapTransactions()
         {
-            app.MapODataMetadata("odata", TransactionODataModel.GetModel())
+            var versionSet = app.NewApiVersionSet()
+                .HasApiVersion(new ApiVersion(1, 0))
+                .ReportApiVersions()
+                .Build();
+
+            app.MapODataMetadata("odata/$metadata", TransactionODataModel.GetModel())
+                .WithApiVersionSet(versionSet)
+                .MapToApiVersion(new ApiVersion(1, 0))
                 .WithSummary("Get OData metadata");
 
             app.MapGet("/odata/Transactions", (
@@ -20,6 +28,8 @@ internal static class TransactionEndpoints
             })
             .RequireAuthorization(policy => policy.RequireAssertion(context =>
                 !string.IsNullOrWhiteSpace(GetEmailAddress(context.User))))
+            .WithApiVersionSet(versionSet)
+            .MapToApiVersion(new ApiVersion(1, 0))
             .AddODataQueryEndpointFilter(_ => { }, _ => { })
             .WithODataOptions(options => options
                 .Select()
