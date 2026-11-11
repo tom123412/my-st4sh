@@ -50,25 +50,22 @@ internal static class TransactionEndpoints
 
             app.MapGet("/odata/Transactions({id:int})", async Task<Results<
                 Ok<TransactionResponse>,
-                NotFound,
-                ForbidHttpResult>> (
+                NotFound>> (
                 int id,
                 ITransactionService transactionService,
                 ClaimsPrincipal user,
                 CancellationToken cancellationToken) =>
             {
-                var emailAddress = GetEmailAddress(user);
-                if (string.IsNullOrWhiteSpace(emailAddress))
-                    return TypedResults.Forbid();
-
                 var transaction = await transactionService.GetByIdAsync(
                     id,
-                    emailAddress,
+                    GetEmailAddress(user)!,
                     cancellationToken);
                 return transaction is null
                     ? TypedResults.NotFound()
                     : TypedResults.Ok(transaction);
             })
+            .RequireAuthorization(policy => policy.RequireAssertion(context =>
+                !string.IsNullOrWhiteSpace(GetEmailAddress(context.User))))
             .WithApiVersionSet(versionSet)
             .MapToApiVersion(new ApiVersion(1, 0))
             .WithName("GetTransactionOData")
@@ -80,20 +77,15 @@ internal static class TransactionEndpoints
 
             app.MapPost("/odata/Transactions", async Task<Results<
                 Created<TransactionResponse>,
-                NotFound,
-                ForbidHttpResult>> (
+                NotFound>> (
                 CreateTransactionRequest request,
                 ITransactionService transactionService,
                 ClaimsPrincipal user,
                 CancellationToken cancellationToken) =>
             {
-                var emailAddress = GetEmailAddress(user);
-                if (string.IsNullOrWhiteSpace(emailAddress))
-                    return TypedResults.Forbid();
-
                 var transaction = await transactionService.CreateAsync(
                     request,
-                    emailAddress,
+                    GetEmailAddress(user)!,
                     cancellationToken);
                 return transaction is null
                     ? TypedResults.NotFound()
