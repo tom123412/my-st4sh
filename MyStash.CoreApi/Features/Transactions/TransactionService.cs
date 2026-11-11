@@ -6,8 +6,12 @@ namespace MyStash.CoreApi.Features.Transactions;
 
 internal sealed class TransactionService(MyStashDbContext dbContext) : ITransactionService
 {
-    public IQueryable<TransactionResponse> GetAll(string emailAddress)
+    public IQueryable<TransactionResponse> GetAll(
+        string emailAddress,
+        CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         return
             from transaction in dbContext.Set<Transaction>().AsNoTracking()
             join account in dbContext.Set<Account>() on transaction.AccountId equals account.Id
@@ -31,7 +35,7 @@ internal sealed class TransactionService(MyStashDbContext dbContext) : ITransact
         string emailAddress,
         CancellationToken cancellationToken)
     {
-        return GetAll(emailAddress)
+        return GetAll(emailAddress, cancellationToken)
             .FirstOrDefaultAsync(transaction => transaction.Id == id, cancellationToken);
     }
 

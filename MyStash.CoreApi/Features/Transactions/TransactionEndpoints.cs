@@ -26,7 +26,9 @@ internal static class TransactionEndpoints
                 ClaimsPrincipal user,
                 CancellationToken cancellationToken) =>
             {
-                return transactionService.GetAll(GetEmailAddress(user)!);
+                return transactionService.GetAll(
+                    GetEmailAddress(user)!,
+                    cancellationToken);
             })
             .RequireAuthorization(policy => policy.RequireAssertion(context =>
                 !string.IsNullOrWhiteSpace(GetEmailAddress(context.User))))
