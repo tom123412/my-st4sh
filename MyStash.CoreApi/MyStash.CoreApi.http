@@ -4,3 +4,9 @@ GET {{MyStash.CoreApi_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+
+### Get all transactions
+GET {{MyStash.CoreApi_HostAddress}}/api/transactions
+Accept: application/json
+
+###

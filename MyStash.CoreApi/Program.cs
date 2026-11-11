@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using MyStash.CoreApi.Data;
+using MyStash.CoreApi.Features.Transactions;
 using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -38,6 +39,7 @@ builder.Services.AddAuthorizationBuilder()
 builder.Services.AddOpenApi();
 
 builder.AddSqlServerDbContext<MyStashDbContext>("appdb");
+builder.Services.AddScoped<ITransactionService, TransactionService>();
 
 var app = builder.Build();
 
@@ -53,6 +55,8 @@ app.MapDefaultEndpoints();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapTransactions();
 
 if (app.Environment.IsDevelopment())
 {
