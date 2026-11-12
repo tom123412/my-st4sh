@@ -7,27 +7,31 @@ using Microsoft.Extensions.Logging;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-// Azure CLI installs Bicep lazily; initialize it once before parallel provisioning steps use it.
+// Local run/debug pipelines don't include the provisioning steps listed in requiredBy.
+if (builder.ExecutionContext.IsPublishMode)
+{
+    // Azure CLI installs Bicep lazily; initialize it once before parallel provisioning steps use it.
 #pragma warning disable ASPIREPIPELINES001 // The pipeline API is required to order Bicep initialization before provisioning.
-builder.Pipeline.AddStep(
-    "ensure-bicep-cli",
-    async context =>
-    {
-        await RunProcessAsync(
-            fileName: "az",
-            arguments: ["bicep", "install"],
-            workingDirectory: builder.AppHostDirectory,
-            logger: context.Logger,
-            cancellationToken: context.CancellationToken);
-    },
-    requiredBy: new[]
-    {
-        "provision-swa-infra",
-        "provision-azuresql",
-        "provision-my-stash-acr",
-        "provision-my-stash",
-    });
+    builder.Pipeline.AddStep(
+        "ensure-bicep-cli",
+        async context =>
+        {
+            await RunProcessAsync(
+                fileName: "az",
+                arguments: ["bicep", "install"],
+                workingDirectory: builder.AppHostDirectory,
+                logger: context.Logger,
+                cancellationToken: context.CancellationToken);
+        },
+        requiredBy: new[]
+        {
+            "provision-swa-infra",
+            "provision-azuresql",
+            "provision-my-stash-acr",
+            "provision-my-stash",
+        });
 #pragma warning restore ASPIREPIPELINES001
+}
 
 builder.AddAzureAppServiceEnvironment("my-stash")
     .ConfigureInfrastructure(infra =>
