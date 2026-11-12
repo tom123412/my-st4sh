@@ -110,8 +110,8 @@ var swaInfra = builder.AddAzureInfrastructure("swa-infra", infra =>
         Location = AzureLocation.EastAsia, // Closest SWA-supported region to Australia (or use WestUS2 / CentralUS)
         Sku = new AppServiceSkuDescription
         {
-            Name = "Free",
-            Tier = "Free"
+            Name = "Standard",
+            Tier = "Standard",
         },
         BuildProperties = new StaticSiteBuildProperties
         {
