@@ -44,7 +44,7 @@ namespace MyStash.CoreApi.Migrations
                                 ) AS NewBalance
                             FROM [dbo].[Transaction] t
                             INNER JOIN AffectedAccounts aa ON t.AccountId = aa.AccountId
-                            LEFT JOIN [dbo].[Categories] c ON t.CategoryId = c.Id
+                            LEFT JOIN [dbo].[Category] c ON t.CategoryId = c.Id
                         )
                         UPDATE t
                         SET
