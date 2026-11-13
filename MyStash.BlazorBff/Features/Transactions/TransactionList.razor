@@ -15,26 +15,48 @@ else
             <thead>
                 <tr class="border-b border-slate-200 text-xs font-semibold uppercase tracking-wide text-slate-500">
                     <th scope="col" class="px-4 py-3">Date</th>
-                    <th scope="col" class="px-4 py-3">Category</th>
-                    <th scope="col" class="px-4 py-3">Type</th>
-                    <th scope="col" class="px-4 py-3 text-right">Amount</th>
+                    <th scope="col" class="px-4 py-3 text-right">Debit</th>
+                    <th scope="col" class="px-4 py-3 text-right">Credit</th>
                     <th scope="col" class="px-4 py-3 text-right">Balance</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
                 @foreach (var transaction in Transactions)
                 {
+                    var isExpense = string.Equals(
+                        transaction.CategoryTypeName,
+                        "Debit",
+                        StringComparison.OrdinalIgnoreCase);
+                    var isIncome = string.Equals(
+                        transaction.CategoryTypeName,
+                        "Credit",
+                        StringComparison.OrdinalIgnoreCase);
+
                     <tr class="hover:bg-slate-50">
-                        <td class="whitespace-nowrap px-4 py-4 text-sm text-slate-600">@transaction.Date.ToString("MMM d, yyyy", CultureInfo.InvariantCulture)</td>
-                        <td class="px-4 py-4 text-sm font-medium text-slate-900">
-                            @transaction.CategoryName
+                        <td class="whitespace-nowrap px-4 py-4 text-sm text-slate-600">
+                            @transaction.Date.ToString("MMM d, yyyy", CultureInfo.InvariantCulture)
                             @if (transaction.IsExempt)
                             {
                                 <span class="ml-2 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">Exempt</span>
                             }
                         </td>
-                        <td class="px-4 py-4 text-sm text-slate-500">@transaction.CategoryTypeName</td>
-                        <td class="whitespace-nowrap px-4 py-4 text-right text-sm font-semibold @(transaction.Amount < 0 ? "text-rose-700" : "text-slate-900")">@transaction.Amount.ToString("N2", CultureInfo.InvariantCulture)</td>
+                        @if (isExpense)
+                        {
+                            <td class="whitespace-nowrap px-4 py-4 text-right text-sm font-semibold text-rose-700">@transaction.Amount.ToString("N2", CultureInfo.InvariantCulture)</td>
+                            <td class="px-4 py-4"></td>
+                        }
+                        else if (isIncome)
+                        {
+                            <td class="px-4 py-4"></td>
+                            <td class="whitespace-nowrap px-4 py-4 text-right text-sm font-semibold text-emerald-700">@transaction.Amount.ToString("N2", CultureInfo.InvariantCulture)</td>
+                        }
+                        else
+                        {
+                            <td colspan="2" class="px-4 py-4 text-sm text-rose-700">
+                                Unrecognized category type: @transaction.CategoryTypeName
+                                (@transaction.Amount.ToString("N2", CultureInfo.InvariantCulture))
+                            </td>
+                        }
                         <td class="whitespace-nowrap px-4 py-4 text-right text-sm text-slate-600">@transaction.Balance.ToString("N2", CultureInfo.InvariantCulture)</td>
                     </tr>
                 }
