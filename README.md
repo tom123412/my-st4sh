@@ -42,6 +42,7 @@ cd ..
 ```
 
 Aspire watches and rebuilds the Tailwind stylesheet during local runs, and builds the static frontend into `MyStash.Htmx/dist` during deployment.
+The transactions page at `/transactions` redirects signed-out visitors to log in before loading the signed-in user's activity from the past six months.
 
 The container configures HTTPS development certificates at startup through Aspire, independent of your app's language:
 
@@ -70,7 +71,7 @@ Forwarded headers are accepted from known local proxies using ASP.NET Core's def
 
 The BFF uses the Authorization Code flow. In Auth0, use a **Regular Web Application** and enable the **Authorization Code** grant. The callback should return a `code` and `state` (including in a form POST); a posted `id_token` indicates an implicit or otherwise mismatched flow.
 
-The BFF uses Auth0 login and a cookie session; it requests an access token for the configured API audience and forwards that token to the Core API. The Core API validates the token. The `/api/products`, `/weatherforecast`, and BFF `/api/fragments/catalog` endpoints require an authenticated user. Use an access token for the API audience, not an ID token. The BFF root, login/logout endpoints, development OpenAPI document, and Aspire health endpoints are explicitly anonymous.
+The BFF uses Auth0 login and a cookie session; it requests an access token for the configured API audience and forwards that token to the Core API. The Core API validates the token. The `/api/products`, `/weatherforecast`, `/api/fragments/catalog`, and `/api/fragments/transactions` endpoints require an authenticated user. Use an access token for the API audience, not an ID token. The BFF root, login/logout endpoints, development OpenAPI document, and Aspire health endpoints are explicitly anonymous.
 
 > [!NOTE]
 > Once you have created your repository from this template please remember to review the included files such as `LICENSE`, `CODE_OF_CONDUCT.md`, `SECURITY.md` and this `README.md` file to ensure they are appropriate for your circumstances.

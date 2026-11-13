@@ -1,6 +1,10 @@
 {
   "routes": [
     {
+      "route": "/transactions",
+      "rewrite": "/transactions.html"
+    },
+    {
       "route": "/api/*",
       "allowedRoles": ["anonymous"]
     }

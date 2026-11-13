@@ -1,13 +1,15 @@
-using Microsoft.AspNetCore.Authorization;
-using System.Net.Http.Headers;
 using Auth0.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.HttpOverrides;
+using MyStash.BlazorBff.Features.Authentication;
+using MyStash.BlazorBff.Features.Catalog;
+using MyStash.BlazorBff.Features.Transactions;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
+builder.Services.AddRazorComponents();
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
@@ -55,6 +57,22 @@ builder.Services
     })
     .WithAccessToken(options => options.Audience = auth0Audience);
 
+builder.Services.Configure<CookieAuthenticationOptions>(
+    CookieAuthenticationDefaults.AuthenticationScheme,
+    options => options.Events.OnRedirectToLogin = context =>
+    {
+        if (context.Request.Path.StartsWithSegments("/api"))
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        }
+        else
+        {
+            context.Response.Redirect(context.RedirectUri);
+        }
+
+        return Task.CompletedTask;
+    });
+
 builder.Services.AddAuthorizationBuilder()
     .SetFallbackPolicy(new AuthorizationPolicyBuilder()
     .RequireAuthenticatedUser()
@@ -74,74 +92,10 @@ app
     .MapGet("/", () => "Hello World!")
     .AllowAnonymous();
 
-app
-    .MapGet("/api/login", (string? returnUrl) =>
-    {
-        var properties = new LoginAuthenticationPropertiesBuilder()
-            .WithRedirectUri(IsLocalReturnUrl(returnUrl) ? returnUrl! : "/")
-            .Build();
-        return Results.Challenge(properties, [Auth0Constants.AuthenticationScheme]);
-    })
-    .AllowAnonymous()
-    ;
-
-app.MapPost("/api/logout", async (HttpContext httpContext) =>
-{
-    var properties = new LogoutAuthenticationPropertiesBuilder()
-        .WithRedirectUri("/")
-        .Build();
-
-    await httpContext.SignOutAsync(Auth0Constants.AuthenticationScheme, properties);
-    await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-    return Results.Empty;
-});
-
-app.MapGet("/api/fragments/catalog", async (HttpContext httpContext, IHttpClientFactory clientFactory) =>
-{
-    var accessToken = await httpContext.GetTokenAsync("access_token");
-    if (string.IsNullOrWhiteSpace(accessToken))
-    {
-        return Results.Unauthorized();
-    }
-
-    var client = clientFactory.CreateClient("CoreApiClient");
-    
-    using var request = new HttpRequestMessage(HttpMethod.Get, "/api/products");
-    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-    using var response = await client.SendAsync(request, httpContext.RequestAborted);
-
-    if (!response.IsSuccessStatusCode)
-    {
-        return Results.StatusCode((int)response.StatusCode);
-    }
-
-    var products = await response.Content.ReadFromJsonAsync<List<ProductDto>>(
-        httpContext.RequestAborted);
-
-    // Render the data into an HTML fragment for HTMX to swap into the DOM
-    var html = new System.Text.StringBuilder();
-    if (products is not null)
-    {
-        foreach (var item in products)
-        {
-            html.Append($@"
-                <div class='mt-3 rounded-lg border-l-4 border-sky-600 bg-sky-50 px-4 py-3 text-slate-700'>
-                    <strong class='font-semibold text-slate-900'>{item.Name}</strong> ({item.Category}) - ${item.Price} <br>
-                    <small class='text-sm text-slate-500'>Sourced from CoreApi via Blazor BFF</small>
-                </div>");
-        }
-    }
-
-    return Results.Content(html.ToString(), "text/html");
-});
+app.MapAuthentication();
+app.MapCatalog();
+app.MapTransactions();
 
 app.UseAuthentication();
 app.UseAuthorization();
 app.Run();
-
-static bool IsLocalReturnUrl(string? returnUrl) =>
-    !string.IsNullOrEmpty(returnUrl)
-    && returnUrl[0] == '/'
-    && (returnUrl.Length == 1 || (returnUrl[1] != '/' && returnUrl[1] != '\\'));
-
-public record ProductDto(int Id, string Name, string Category, decimal Price);
