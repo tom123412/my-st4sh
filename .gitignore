@@ -78,3 +78,4 @@ BenchmarkDotNet.Artifacts/
 *.coveragexml
 *.pubxml
 *.publishproj
+*.crt
