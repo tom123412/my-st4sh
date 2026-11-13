@@ -31,6 +31,18 @@ Edit [`.devcontainer/devcontainer.json`](.devcontainer/devcontainer.json) to cha
 
 The template does not run a language-specific restore command. Install your app's dependencies with its package manager, such as `npm install`, `uv sync`, or `dotnet restore`.
 
+### HTMX frontend
+
+The static HTMX frontend uses Tailwind CSS. Before starting or deploying the Aspire app, install its dependencies once:
+
+```sh
+cd MyStash.Htmx
+npm install
+cd ..
+```
+
+Aspire watches and rebuilds the Tailwind stylesheet during local runs, and builds the static frontend into `MyStash.Htmx/dist` during deployment.
+
 The container configures HTTPS development certificates at startup through Aspire, independent of your app's language:
 
 ```sh

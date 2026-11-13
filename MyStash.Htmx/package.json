@@ -1,0 +1,14 @@
+{
+  "name": "mystash-htmx",
+  "private": true,
+  "scripts": {
+    "build": "npm run build:css && node scripts/copy-static.mjs",
+    "build:css": "tailwindcss -i ./src/input.css -o ./dist/styles.css --minify",
+    "prewatch": "npm run build",
+    "watch": "tailwindcss -i ./src/input.css -o ./dist/styles.css --watch"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.17",
+    "tailwindcss": "^4.1.17"
+  }
+}

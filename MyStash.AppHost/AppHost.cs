@@ -103,6 +103,9 @@ var blazorBff = builder.AddProject<Projects.MyStash_BlazorBff>("blazor-bff")
 var frontendPath = Path.Combine(builder.AppHostDirectory, "../MyStash.Htmx");
 var bffEndpoint = blazorBff.GetEndpoint("http");
 
+var tailwind = builder.AddExecutable("tailwindcss", "npm", frontendPath)
+    .WithArgs("run", "watch");
+
 var swaNameOutput = new ProvisioningOutput("swaName", typeof(string));
 var swaUrlOutput = new ProvisioningOutput("swaUrl", typeof(string));
 
@@ -134,7 +137,7 @@ builder.AddExecutable("htmx-frontend", "swa", frontendPath)
     .WithArgs(context =>
     {
         context.Args.Add("start");
-        context.Args.Add(".");
+        context.Args.Add("dist");
         context.Args.Add("--ssl");
         context.Args.Add("--port");
         context.Args.Add("4280");
@@ -143,6 +146,7 @@ builder.AddExecutable("htmx-frontend", "swa", frontendPath)
     })
     .WithReference(blazorBff)
     .WaitFor(blazorBff)
+    .WaitFor(tailwind)
     .WithHttpsEndpoint(port: 4280, targetPort: 4280, isProxied: false, name: "https")
     .WithPipelineStepFactory(factoryContext =>
     {
@@ -166,6 +170,13 @@ builder.AddExecutable("htmx-frontend", "swa", frontendPath)
 
                 stepContext.Logger.LogInformation("Deploying SPA from {Dir} to Static Web App '{SwaName}'...", frontendDir, swaName);
 
+                await RunProcessAsync(
+                    fileName: "npm",
+                    arguments: ["run", "build"],
+                    workingDirectory: frontendDir,
+                    logger: stepContext.Logger,
+                    cancellationToken: stepContext.CancellationToken);
+
                 // Run outside the artifact folder; the SWA deploy client rejects a working directory
                 // that is identical to or contained within the app artifact folder.
                 await RunProcessAsync(
@@ -176,6 +187,8 @@ builder.AddExecutable("htmx-frontend", "swa", frontendPath)
                         frontendDir,
                         "--app-location",
                         frontendDir,
+                        "--output-location",
+                        "dist",
                         "--app-name",
                         swaName,
                         "--env",

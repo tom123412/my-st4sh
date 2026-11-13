@@ -125,9 +125,9 @@ app.MapGet("/api/fragments/catalog", async (HttpContext httpContext, IHttpClient
         foreach (var item in products)
         {
             html.Append($@"
-                <div class='catalog-item'>
-                    <strong>{item.Name}</strong> ({item.Category}) - ${item.Price} <br>
-                    <small>Sourced from CoreApi via Blazor BFF</small>
+                <div class='mt-3 rounded-lg border-l-4 border-sky-600 bg-sky-50 px-4 py-3 text-slate-700'>
+                    <strong class='font-semibold text-slate-900'>{item.Name}</strong> ({item.Category}) - ${item.Price} <br>
+                    <small class='text-sm text-slate-500'>Sourced from CoreApi via Blazor BFF</small>
                 </div>");
         }
     }

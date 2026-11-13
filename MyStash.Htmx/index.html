@@ -5,70 +5,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aspire + HTMX + Blazor BFF</title>
+    <link rel="stylesheet" href="/styles.css">
     <!-- Load HTMX safely via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/htmx.org@4.0.1"
         integrity="sha384-Qp9rdC8H7EqOoX+nR0P3RPG2Noji+qdwJlGpfzwQJsfOpp3sGwIdSP9xO3+UlEhn"
         crossorigin="anonymous"></script>
-    <style>
-        body {
-            font-family: sans-serif;
-            margin: 40px;
-            background: #f4f4f9;
-        }
-
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
-        }
-
-        button {
-            background: #0078d4;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background: #005a9e;
-        }
-
-        .catalog-item {
-            margin-top: 10px;
-            padding: 8px;
-            border-left: 4px solid #0078d4;
-            background: #f0f7ff;
-        }
-    </style>
 </head>
 
-<body>
-    <nav>
-        <!-- Standard navigation link (NO hx-get or hx-boost) -->
-        <a href="/api/login" class="btn-login">Log In</a>
+<body class="min-h-screen bg-slate-100 px-4 py-10 font-sans text-slate-900 sm:px-6">
+    <div class="mx-auto max-w-md">
+        <nav class="mb-6 flex items-center justify-end gap-3">
+            <!-- Standard navigation link (NO hx-get or hx-boost) -->
+            <a href="/api/login" class="rounded-lg bg-slate-800 px-4 py-2 font-medium text-white transition hover:bg-slate-700">Log In</a>
 
-        <!-- For Logout, use a standard POST form or GET link depending on your BFF endpoint -->
-        <form action="/api/logout" method="post" style="display:inline;">
-            <button type="submit" class="btn-logout">Log Out</button>
-        </form>
-    </nav>
+            <!-- For Logout, use a standard POST form or GET link depending on your BFF endpoint -->
+            <form action="/api/logout" method="post">
+                <button type="submit" class="rounded-lg border border-slate-300 bg-white px-4 py-2 font-medium text-slate-700 transition hover:bg-slate-50">Log Out</button>
+            </form>
+        </nav>
 
-    <div class="card">
-        <h2>Static SWA Frontend</h2>
-        <p>Click below to request server-rendered HTML fragments from the Blazor BFF:</p>
+        <main class="rounded-2xl bg-white p-6 shadow-xl ring-1 ring-slate-900/5 sm:p-8">
+            <h1 class="text-2xl font-bold tracking-tight">Static SWA Frontend</h1>
+            <p class="mt-2 text-slate-600">Click below to request server-rendered HTML fragments from the Blazor BFF:</p>
 
-        <!-- Pure production relative path -->
-        <button hx-get="api/fragments/catalog" hx-target="#catalog-container" hx-swap="innerHTML">
-            Fetch Latest Items
-        </button>
+            <!-- Pure production relative path -->
+            <button hx-get="api/fragments/catalog" hx-target="#catalog-container" hx-swap="innerHTML"
+                class="mt-6 rounded-lg bg-sky-600 px-4 py-2.5 font-semibold text-white transition hover:bg-sky-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600">
+                Fetch Latest Items
+            </button>
 
-        <div id="catalog-container" style="margin-top: 20px;">
-            <!-- Rendered HTML will drop here seamlessly -->
-        </div>
+            <div id="catalog-container" class="mt-5">
+                <!-- Rendered HTML will drop here seamlessly -->
+            </div>
+        </main>
     </div>
 </body>
 
