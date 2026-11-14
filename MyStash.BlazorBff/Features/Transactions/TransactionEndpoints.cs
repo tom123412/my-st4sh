@@ -56,5 +56,4 @@ public sealed record TransactionDto(
     decimal Amount,
     bool IsExempt,
     decimal Balance,
-    string CategoryName,
     string CategoryTypeName);
