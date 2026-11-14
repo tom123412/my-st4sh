@@ -20,6 +20,11 @@
       "resolved": "ghcr.io/devcontainers/features/node@sha256:8c0de46939b61958041700ee89e3493f3b2e4131a06dc46b4d9423427d06e5f6",
       "integrity": "sha256:8c0de46939b61958041700ee89e3493f3b2e4131a06dc46b4d9423427d06e5f6"
     },
+    "ghcr.io/dnegstad/devcontainer-dev-certs/devcontainer-dev-certs:1": {
+      "version": "1.4.3",
+      "resolved": "ghcr.io/dnegstad/devcontainer-dev-certs/devcontainer-dev-certs@sha256:10e8f970dfa6aa7129401f3c7f00bb565a77adbf9e18ed7df9be05b5965479ce",
+      "integrity": "sha256:10e8f970dfa6aa7129401f3c7f00bb565a77adbf9e18ed7df9be05b5965479ce"
+    },
     "ghcr.io/microsoft/aspire-devcontainer-feature/aspire:2": {
       "version": "2.0.0",
       "resolved": "ghcr.io/microsoft/aspire-devcontainer-feature/aspire@sha256:85cef97f2de880d21a742f799120af2e53f69f4c9334d525381629f81c0409af",

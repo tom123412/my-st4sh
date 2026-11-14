@@ -47,8 +47,8 @@
     </div>
 
     <script>
-        document.body.addEventListener("htmx:responseError", event => {
-            if (event.detail.xhr.status === 401) {
+        htmx.on("htmx:response:error", event => {
+            if (event.detail.ctx.response.status === 401) {
                 window.location.replace("/api/login?returnUrl=%2Ftransactions");
             }
         });

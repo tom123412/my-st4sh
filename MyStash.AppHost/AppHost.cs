@@ -138,7 +138,7 @@ builder.AddExecutable("htmx-frontend", "swa", frontendPath)
     {
         context.Args.Add("start");
         context.Args.Add("dist");
-        context.Args.Add("--ssl");
+        // context.Args.Add("--ssl");
         context.Args.Add("--port");
         context.Args.Add("4280");
         context.Args.Add("--api-devserver-url");
@@ -147,7 +147,8 @@ builder.AddExecutable("htmx-frontend", "swa", frontendPath)
     .WithReference(blazorBff)
     .WaitFor(blazorBff)
     .WaitFor(tailwind)
-    .WithHttpsEndpoint(port: 4280, targetPort: 4280, isProxied: false, name: "https")
+    // .WithHttpsEndpoint(port: 4280, targetPort: 4280, isProxied: false, name: "https")
+    .WithHttpEndpoint(port: 4280, targetPort: 4280, isProxied: false, name: "http")
     .WithPipelineStepFactory(factoryContext =>
     {
 #pragma warning disable ASPIREPIPELINES001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
