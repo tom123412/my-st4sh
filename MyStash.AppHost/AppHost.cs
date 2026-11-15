@@ -63,6 +63,7 @@ var azureSql = builder.AddAzureSqlServer("azuresql")
     .RunAsContainer(container =>
     {
         container
+            .WithImageTag("2025-latest")
             .WithDataVolume() // Persists local dev data across restarts
             .WithPassword(sqlPassword)
             .WithHostPort(14330)
