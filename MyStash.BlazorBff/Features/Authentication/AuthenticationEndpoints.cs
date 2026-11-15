@@ -11,7 +11,7 @@ internal static class AuthenticationEndpoints
         public WebApplication MapAuthentication()
         {
             app
-                .MapGet("/api/login", (string? returnUrl) =>
+                .MapGet("/api/bff/login", (string? returnUrl) =>
                 {
                     var properties = new LoginAuthenticationPropertiesBuilder()
                         .WithRedirectUri(IsLocalReturnUrl(returnUrl) ? returnUrl! : "/")
@@ -20,7 +20,7 @@ internal static class AuthenticationEndpoints
                 })
                 .AllowAnonymous();
 
-            app.MapPost("/api/logout", async (HttpContext httpContext) =>
+            app.MapPost("/api/bff/logout", async (HttpContext httpContext) =>
             {
                 var properties = new LogoutAuthenticationPropertiesBuilder()
                     .WithRedirectUri("/")

@@ -16,7 +16,7 @@
         <nav class="mb-8 flex items-center justify-between gap-3">
             <a href="/" class="font-semibold tracking-tight text-slate-800">MyStash</a>
             <div class="flex items-center gap-3">
-                <form action="/api/logout" method="post">
+                <form action="/api/bff/logout" method="post">
                     <button type="submit"
                         class="rounded-lg border border-slate-300 bg-white px-4 py-2 font-medium text-slate-700 transition hover:bg-slate-50">Log
                         Out</button>
@@ -38,7 +38,7 @@
             </header>
 
             <section aria-label="Recent transactions" class="p-3 sm:p-6">
-                <div id="transactions-list" hx-get="/api/fragments/transactions"
+                <div id="transactions-list" hx-get="/api/bff/fragments/transactions"
                     hx-trigger="load" hx-swap="innerHTML" class="min-h-32">
                     <p class="px-4 py-10 text-center text-sm text-slate-500">Loading transactions...</p>
                 </div>
@@ -49,7 +49,7 @@
     <script>
         htmx.on("htmx:response:error", event => {
             if (event.detail.ctx.response.status === 401) {
-                window.location.replace("/api/login?returnUrl=%2Ftransactions");
+                window.location.replace("/api/bff/login?returnUrl=%2Ftransactions");
             }
         });
     </script>

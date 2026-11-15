@@ -52,7 +52,7 @@ builder.Services
         options.ClientId = auth0ClientId;
         options.ClientSecret = auth0ClientSecret;
         options.ResponseType = "code";
-        options.CallbackPath = "/api/callback";
+        options.CallbackPath = "/api/bff/callback";
         options.Scope = "openid profile email";
     })
     .WithAccessToken(options => options.Audience = auth0Audience);
@@ -61,7 +61,7 @@ builder.Services.Configure<CookieAuthenticationOptions>(
     CookieAuthenticationDefaults.AuthenticationScheme,
     options => options.Events.OnRedirectToLogin = context =>
     {
-        if (context.Request.Path.StartsWithSegments("/api"))
+        if (context.Request.Path.StartsWithSegments("/api/bff"))
         {
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
         }

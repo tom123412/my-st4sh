@@ -5,7 +5,7 @@
       "rewrite": "/transactions.html"
     },
     {
-      "route": "/api/*",
+      "route": "/api/bff/*",
       "allowedRoles": ["anonymous"]
     }
   ],

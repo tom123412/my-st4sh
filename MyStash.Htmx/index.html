@@ -17,10 +17,10 @@
         <nav class="mb-6 flex items-center justify-between gap-3">
             <a href="/transactions" class="font-semibold text-slate-700 transition hover:text-sky-700">Transactions</a>
             <!-- Standard navigation link (NO hx-get or hx-boost) -->
-            <a href="/api/login" class="rounded-lg bg-slate-800 px-4 py-2 font-medium text-white transition hover:bg-slate-700">Log In</a>
+            <a href="/api/bff/login" class="rounded-lg bg-slate-800 px-4 py-2 font-medium text-white transition hover:bg-slate-700">Log In</a>
 
             <!-- For Logout, use a standard POST form or GET link depending on your BFF endpoint -->
-            <form action="/api/logout" method="post">
+            <form action="/api/bff/logout" method="post">
                 <button type="submit" class="rounded-lg border border-slate-300 bg-white px-4 py-2 font-medium text-slate-700 transition hover:bg-slate-50">Log Out</button>
             </form>
         </nav>
@@ -30,7 +30,7 @@
             <p class="mt-2 text-slate-600">Click below to request server-rendered HTML fragments from the Blazor BFF:</p>
 
             <!-- Pure production relative path -->
-            <button hx-get="api/fragments/catalog" hx-target="#catalog-container" hx-swap="innerHTML"
+            <button hx-get="/api/bff/fragments/catalog" hx-target="#catalog-container" hx-swap="innerHTML"
                 class="mt-6 rounded-lg bg-sky-600 px-4 py-2.5 font-semibold text-white transition hover:bg-sky-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600">
                 Fetch Latest Items
             </button>

@@ -9,7 +9,7 @@ internal static class CatalogEndpoints
     {
         public WebApplication MapCatalog()
         {
-            app.MapGet("/api/fragments/catalog", async (HttpContext httpContext, IHttpClientFactory clientFactory) =>
+            app.MapGet("/api/bff/fragments/catalog", async (HttpContext httpContext, IHttpClientFactory clientFactory) =>
             {
                 var accessToken = await httpContext.GetTokenAsync("access_token");
                 if (string.IsNullOrWhiteSpace(accessToken))

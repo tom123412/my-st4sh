@@ -11,7 +11,7 @@ internal static class TransactionEndpoints
     {
         public WebApplication MapTransactions()
         {
-            app.MapGet("/api/fragments/transactions", async (HttpContext httpContext, IHttpClientFactory clientFactory) =>
+            app.MapGet("/api/bff/fragments/transactions", async (HttpContext httpContext, IHttpClientFactory clientFactory) =>
             {
                 var accessToken = await httpContext.GetTokenAsync("access_token");
 

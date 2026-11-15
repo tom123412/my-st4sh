@@ -65,13 +65,13 @@ dotnet user-secrets set "Parameters:auth0-client-id" "YOUR_CLIENT_ID" --project 
 dotnet user-secrets set "Parameters:auth0-client-secret" "YOUR_CLIENT_SECRET" --project MyStash.AppHost
 ```
 
-Aspire passes the authority and audience to both services, and passes the client credentials only to the BFF. The BFF uses ASP.NET Core forwarded-header middleware to honor the proxy's `X-Forwarded-Host` and `X-Forwarded-Proto` values when generating Auth0 redirects. Add the public Codespaces frontend URL with `/api/callback` to the Auth0 web application's **Allowed Callback URLs**, and the public frontend origin to **Allowed Logout URLs**. For port `4280`, the URL format is `https://CODESPACE_NAME-4280.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN`.
+Aspire passes the authority and audience to both services, and passes the client credentials only to the BFF. The BFF uses ASP.NET Core forwarded-header middleware to honor the proxy's `X-Forwarded-Host` and `X-Forwarded-Proto` values when generating Auth0 redirects. Add the public Codespaces frontend URL with `/api/bff/callback` to the Auth0 web application's **Allowed Callback URLs**, and the public frontend origin to **Allowed Logout URLs**. For port `4280`, the URL format is `https://CODESPACE_NAME-4280.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN`.
 
 Forwarded headers are accepted from known local proxies using ASP.NET Core's default trusted-proxy list; do not clear that list or accept forwarded headers from arbitrary remote clients.
 
 The BFF uses the Authorization Code flow. In Auth0, use a **Regular Web Application** and enable the **Authorization Code** grant. The callback should return a `code` and `state` (including in a form POST); a posted `id_token` indicates an implicit or otherwise mismatched flow.
 
-The BFF uses Auth0 login and a cookie session; it requests an access token for the configured API audience and forwards that token to the Core API. The Core API validates the token. The `/api/products`, `/weatherforecast`, `/api/fragments/catalog`, and `/api/fragments/transactions` endpoints require an authenticated user. Use an access token for the API audience, not an ID token. The BFF root, login/logout endpoints, development OpenAPI document, and Aspire health endpoints are explicitly anonymous.
+The BFF uses Auth0 login and a cookie session; it requests an access token for the configured API audience and forwards that token to the Core API. The Core API validates the token. The BFF's `/api/bff/fragments/catalog` and `/api/bff/fragments/transactions` endpoints require an authenticated user, as do the Core API's `/api/products` and `/weatherforecast` endpoints. Use an access token for the API audience, not an ID token. The BFF root, `/api/bff/login`, `/api/bff/logout`, development OpenAPI document, and Aspire health endpoints are explicitly anonymous.
 
 > [!NOTE]
 > Once you have created your repository from this template please remember to review the included files such as `LICENSE`, `CODE_OF_CONDUCT.md`, `SECURITY.md` and this `README.md` file to ensure they are appropriate for your circumstances.
